@@ -23,16 +23,56 @@ class Game {
     this.HEIGHT = HEIGHT;
     this.board = [];
     this.currPlayer = 1;
-    // this.makeBoard();
-    this.makeBoard();
-    this.makeHtmlBoard();
+    this.startGame();
+    this.gameStatus = true;
+    // this.startGame();
+
     // this.findSpotForCol() = 
     // this.handleClick = this.handleClick.bind(this);
     // this.findSpotForCol = this.findSpotForCol.bind(this);
 
     //can bind this to handleclick with a new var
   }
+  startGame(){
+    
+    const p1Color = document.getElementById("p1Color").value;
+    const p2Color = document.getElementById("p2Color").value;
 
+    new Player(p1Color,p2Color);
+    
+    const button = document.getElementById("start");
+    button.addEventListener("click", setupGame.bind(this))
+
+    //must reset board array and html
+
+    function setupGame(){
+
+      //first delete all
+      //then build board
+      this.gameStatus = true;
+
+      this.board.length = 0;
+
+      const table = document.getElementById("board");
+
+      const trs = document.querySelectorAll("tr");
+
+
+      for (let tr of trs){
+        // console.log(tr);
+        tr.remove();
+      }
+
+      this.makeBoard();
+      this.makeHtmlBoard();
+    }
+
+  }
+
+  // startGame(){
+
+  // }
+  
   makeBoard() {
     for (let y = 0; y < this.HEIGHT; y++) {
       this.board.push(Array.from({ length: this.WIDTH }));
@@ -79,6 +119,11 @@ class Game {
 
   handleClick(evt) {
     // get x from ID of clicked cell
+    if(!this.gameStatus){
+      // console.log('game over');
+      return;
+    }
+    
     const x = +evt.target.id;
   
     // get next spot in column (if none, ignore click)
@@ -93,12 +138,13 @@ class Game {
     
     // check for win
     if (this.checkForWin()) {
-      return endGame(`Player ${this.currPlayer} won!`);
+      this.gameStatus = false;
+      return this.endGame(`Player ${this.currPlayer} won!`);
     }
     
     // check for tie
     if (this.board.every(row => row.every(cell => cell))) {
-      return endGame('Tie!');
+      return this.endGame('Tie!');
     }
       
     // switch players
@@ -116,16 +162,14 @@ class Game {
   }
 
   checkForWin() {
-    let w = 1;
-    
-    // _win.bind(this);
 
-    function _win(cells) {
+    
+    const _win = cells => 
       // Check four cells to see if they're all color of current player
       //  - cells: list of four (y, x) cells
       //  - returns true if all are legal coordinates & all match currPlayer
   
-      return cells.every(
+      cells.every(
         ([y, x]) =>
           y >= 0 &&
           y < this.HEIGHT &&
@@ -133,7 +177,7 @@ class Game {
           x < this.WIDTH &&
           this.board[y][x] === this.currPlayer
       );
-    }
+    
   
     for (let y = 0; y < this.HEIGHT; y++) {
       for (let x = 0; x < this.WIDTH; x++) {
@@ -159,6 +203,20 @@ class Game {
   }
 
 }
+
+class Player{
+  constructor(p1Color, p2Color){
+    this.p1Color = p1Color;
+    this.p2Color = p2Color;
+  }
+}
+
+const form = document.getElementById("form");
+function handleForm(e) {
+  e.preventdefault();
+}
+form.addEventListener('submit',handleForm)
+
 
 const test = new Game(6,7);
 
